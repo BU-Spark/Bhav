@@ -1,33 +1,33 @@
-import Vue from 'vue'
-import Vuex from 'vuex'
-import firebase from 'firebase'
-import db from '@/firebase/init.js'
+import Vue from "vue";
+import Vuex from "vuex";
+import firebase from "firebase";
+import db from "@/firebase/init.js";
 
-Vue.use(Vuex)
+Vue.use(Vuex);
 
 const state = {
   user: null
-}
+};
 
 const getters = {
   getUser: state => state.user
-}
+};
 
 const mutations = {
   setUser: (state, payload) => {
-    state.user = payload
+    state.user = payload;
   }
-}
+};
 
 const actions = {
   setUser: async context => {
-    const user = firebase.auth().currentUser
+    const user = firebase.auth().currentUser;
     // user is just not logged in
     if (!user) {
-      return
+      return;
     }
-    const mydb = db.collection('users').doc(user.uid)
-    var raid = await mydb.get()
+    const mydb = db.collection("users").doc(user.uid);
+    var raid = await mydb.get();
     if (!raid.exists) {
       // first time user
       await mydb.set({
@@ -35,25 +35,25 @@ const actions = {
         uid: user.uid,
         disabilities: [],
         skills: []
-      })
-      raid = await mydb.get()
-      context.commit('setUser', raid.data())
+      });
+      raid = await mydb.get();
+      context.commit("setUser", raid.data());
     } else {
       // returning user
-      context.commit('setUser', raid.data())
+      context.commit("setUser", raid.data());
     }
   },
   logOut: async context => {
-    await firebase.auth().signOut()
-    context.commit('setUser', null)
+    await firebase.auth().signOut();
+    context.commit("setUser", null);
   }
-}
+};
 
 const store = new Vuex.Store({
   state,
   mutations,
   actions,
   getters
-})
+});
 
-export default store
+export default store;

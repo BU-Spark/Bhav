@@ -1,60 +1,89 @@
 <template>
-<main>
-  <div class="container">
-    <div class="jumbotron">
-      <h4 class="mb-3">Project</h4>
-      <form>
-        <div class="row">
-          <div class="col-md-auto mb-3">
-            <label for="name">Project Name</label>
-            <div class="input-group">
-              <input type="text" class="form-control" id="name" onpaste="return false" v-model="name" @input="checkAvailability()">
-              <div class="availability">
-                <i v-if="nameempty" class="material-icons red">close</i>
-                <i v-else-if="available" class="material-icons green">check</i>
-                <i v-else-if="unavailable" class="material-icons red">close</i>
+  <main>
+    <div class="container">
+      <div class="jumbotron">
+        <h4 class="mb-3">Project</h4>
+        <form>
+          <div class="row">
+            <div class="col-md-auto mb-3">
+              <label for="name">Project Name</label>
+              <div class="input-group">
+                <input
+                  type="text"
+                  class="form-control"
+                  id="name"
+                  onpaste="return false"
+                  v-model="name"
+                  @input="checkAvailability()"
+                />
+                <div class="availability">
+                  <i v-if="nameempty" class="material-icons red">close</i>
+                  <i v-else-if="available" class="material-icons green"
+                    >check</i
+                  >
+                  <i v-else-if="unavailable" class="material-icons red"
+                    >close</i
+                  >
+                </div>
               </div>
+              <p v-if="nameempty" class="red availability">
+                Enter a Project Name
+              </p>
+              <p v-else-if="available" class="green availability">
+                Project Name available!
+              </p>
+              <p v-else-if="unavailable" class="red availability">
+                Project Name unavailable!
+              </p>
             </div>
-            <p v-if="nameempty" class="red availability">Enter a Project Name</p>
-            <p v-else-if="available" class="green availability">Project Name available!</p>
-            <p v-else-if="unavailable" class="red availability">Project Name unavailable!</p>
           </div>
-        </div>
-        <div class="mb-3">
-          <label for="intro">Short Introduction</label>
-          <textarea class="form-control" rows="3" id="intro" v-model="intro"></textarea>
-        </div>
-        <hr class="mb-4">
-      </form>
-      <button :disabled="unavailable||nameempty" class="btn btn-primary btn-lg btn-block col-md-3" type="submit" @click="createProject()">Create</button>
+          <div class="mb-3">
+            <label for="intro">Short Introduction</label>
+            <textarea
+              class="form-control"
+              rows="3"
+              id="intro"
+              v-model="intro"
+            ></textarea>
+          </div>
+          <hr class="mb-4" />
+        </form>
+        <button
+          :disabled="unavailable || nameempty"
+          class="btn btn-primary btn-lg btn-block col-md-3"
+          type="submit"
+          @click="createProject()"
+        >
+          Create
+        </button>
+      </div>
     </div>
-  </div>
-  <hr class="featurette-divider">
+    <hr class="featurette-divider" />
 
-  <footer class="container">
-    <p class="float-right"><a href="#">Back to top</a></p>
-    <p>© 2018 Humanistic Co-Design Initiative ·
-      <a>
-        <router-link :to="{ name: 'privacy'}">Privacy</router-link>
-      </a>
-    </p>
-  </footer>
-</main>
+    <footer class="container">
+      <p class="float-right"><a href="#">Back to top</a></p>
+      <p>
+        © 2018 Humanistic Co-Design Initiative ·
+        <a>
+          <router-link :to="{ name: 'privacy' }">Privacy</router-link>
+        </a>
+      </p>
+    </footer>
+  </main>
 </template>
 
 <script>
-import firebase from 'firebase'
-import db from '@/firebase/init.js'
+import db from "@/firebase/init.js";
 export default {
-  name: 'createproject',
+  name: "createproject",
   computed: {
     user() {
-      return this.$store.state.user
+      return this.$store.state.user;
     }
   },
   methods: {
     async createProject() {
-      const ref = db.collection('projects')
+      const ref = db.collection("projects");
       await ref.add({
         name: this.name,
         intro: this.intro,
@@ -74,26 +103,32 @@ export default {
         completion: null,
         devstage: null,
         tags: []
-      })
+      });
       this.$router.push({
         name: "project",
         params: {
           name: this.name
         }
-      })
+      });
     },
     async checkAvailability() {
-      let checkname = await db.collection('projects').where("name", "==", this.name).get()
+      let checkname = await db
+        .collection("projects")
+        .where("name", "==", this.name)
+        .get();
       if (this.name == null || this.name == "") {
-        this.nameempty = true
-      } else if (checkname.empty || checkname.docs[0].data().name == this.user.name) {
-        this.available = true
-        this.nameempty = false
-        this.unavailable = false
+        this.nameempty = true;
+      } else if (
+        checkname.empty ||
+        checkname.docs[0].data().name == this.user.name
+      ) {
+        this.available = true;
+        this.nameempty = false;
+        this.unavailable = false;
       } else {
-        this.available = false
-        this.nameempty = false
-        this.unavailable = true
+        this.available = false;
+        this.nameempty = false;
+        this.unavailable = true;
       }
     }
   },
@@ -103,13 +138,13 @@ export default {
       name: null,
       available: null,
       unavailable: null,
-      nameempty: null,
-    }
+      nameempty: null
+    };
   },
   mounted: function() {
-    this.checkAvailability()
+    this.checkAvailability();
   }
-}
+};
 </script>
 
 <style>

@@ -1,42 +1,66 @@
 <template>
-<main>
-  <div class="jumbotron">
-    <h3>Comments</h3>
-    <div class="my-3 p-3 bg-white rounded shadow-sm scroll" v-chat-scroll>
-      <div class="media text pt-3">
-        <div>
-          <div class="media-body pb-3 mb-0 lh-125" v-for="comment in comments" :key="comment.id">
-            <span>{{ comment.value }}</span>
-            <span class="text-muted">{{ comment.sender }}, {{ makeTimeReadable(comment.timestamp) }}</span>
-            <a v-if="user.uname == comment.sender" class="btn text-right text-muted" @click.prevent="delComment(comment.timestamp)">Delete</a>
+  <main>
+    <div class="jumbotron">
+      <h3>Comments</h3>
+      <div class="my-3 p-3 bg-white rounded shadow-sm scroll" v-chat-scroll>
+        <div class="media text pt-3">
+          <div>
+            <div
+              class="media-body pb-3 mb-0 lh-125"
+              v-for="comment in comments"
+              :key="comment.id"
+            >
+              <span>{{ comment.value }}</span>
+              <span class="text-muted"
+                >{{ comment.sender }},
+                {{ makeTimeReadable(comment.timestamp) }}</span
+              >
+              <a
+                v-if="user.uname == comment.sender"
+                class="btn text-right text-muted"
+                @click.prevent="delComment(comment.timestamp)"
+                >Delete</a
+              >
+            </div>
           </div>
         </div>
       </div>
-    </div>
-    <div class="row">
-      <div class="col-12">
-        <form>
-          <div class="input-group add-on">
-            <input type="text" class="form-control mr-1" id="newMessage" placeholder="Add a comment..." v-model="newMessage" @input="checkInput()">
-            <div class="input-group-btn">
-              <button :disabled="disableSend" class="btn btn-primary" @click.prevent="addComment()">Send</button>
+      <div class="row">
+        <div class="col-12">
+          <form>
+            <div class="input-group add-on">
+              <input
+                type="text"
+                class="form-control mr-1"
+                id="newMessage"
+                placeholder="Add a comment..."
+                v-model="newMessage"
+                @input="checkInput()"
+              />
+              <div class="input-group-btn">
+                <button
+                  :disabled="disableSend"
+                  class="btn btn-primary"
+                  @click.prevent="addComment()"
+                >
+                  Send
+                </button>
+              </div>
             </div>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
-  </div>
-</main>
+  </main>
 </template>
 
 <script>
-import moment from 'moment'
-import firebase from 'firebase'
-import db from '@/firebase/init.js'
+import moment from "moment";
+import db from "@/firebase/init.js";
 export default {
   computed: {
     user() {
-      return this.$store.state.user
+      return this.$store.state.user;
     }
   },
   data() {
@@ -46,61 +70,66 @@ export default {
       comBoxID: null,
       newMessage: null,
       disableSend: null
-    }
+    };
   },
   methods: {
     async addComment() {
-      let dataref = db.collection('comments').doc(this.comBoxID)
-      let data = await dataref.get()
-      this.comments = data.data().comments
+      let dataref = db.collection("comments").doc(this.comBoxID);
+      let data = await dataref.get();
+      this.comments = data.data().comments;
       this.comments.push({
         value: this.newMessage,
         sender: this.user.uname,
         timestamp: Date.now()
-      })
+      });
       await dataref.update({
         comments: this.comments
-      })
-      this.newMessage = null
+      });
+      this.newMessage = null;
     },
     async delComment(timestamp) {
-      let dataref = db.collection('comments').doc(this.comBoxID)
-      let data = await dataref.get()
-      this.comments = data.data().comments.filter(comment => comment.timestamp != timestamp)
+      let dataref = db.collection("comments").doc(this.comBoxID);
+      let data = await dataref.get();
+      this.comments = data
+        .data()
+        .comments.filter(comment => comment.timestamp != timestamp);
       await dataref.update({
         comments: this.comments
-      })
+      });
     },
     async checkInput() {
       if (this.newMessage == null || this.newMessage == "") {
-        this.disableSend = true
+        this.disableSend = true;
       } else {
-        this.disableSend = false
+        this.disableSend = false;
       }
     },
     makeTimeReadable(timestamp) {
-      return moment(timestamp).format("lll")
+      return moment(timestamp).format("lll");
     }
   },
   async created() {
-    let findComment = await db.collection('comments').where("commentBoxID", "array-contains", this.route).get()
-    const ref = db.collection('comments')
+    let findComment = await db
+      .collection("comments")
+      .where("commentBoxID", "array-contains", this.route)
+      .get();
+    const ref = db.collection("comments");
     if (findComment.empty) {
       await ref.add({
         comments: [],
         commentBoxID: [this.route]
-      })
-      location.reload()
+      });
+      location.reload();
     } else {
-      this.comBoxID = findComment.docs[0].id
+      this.comBoxID = findComment.docs[0].id;
     }
-    const msgref = db.collection('comments').doc(this.comBoxID)
+    const msgref = db.collection("comments").doc(this.comBoxID);
     msgref.onSnapshot(docSnapshot => {
-      this.comments = docSnapshot.data().comments
-    })
-    this.disableSend = true
+      this.comments = docSnapshot.data().comments;
+    });
+    this.disableSend = true;
   }
-}
+};
 </script>
 
 <style scoped>
@@ -123,11 +152,11 @@ export default {
 }
 
 .section-head {
-  padding-left: 8px
+  padding-left: 8px;
 }
 
 .content {
-  padding-left: 12px
+  padding-left: 12px;
 }
 
 .green {
@@ -145,7 +174,7 @@ export default {
   overflow-y: scroll;
 }
 
-.add-on .input-group-btn>.btn {
+.add-on .input-group-btn > .btn {
   border-left-width: 0;
   left: -2px;
   -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);

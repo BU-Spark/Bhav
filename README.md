@@ -1,31 +1,79 @@
-# Bhav.AT
+# Bhav
 
-Bringing Assistive Technology design to the forefront of innovation
+SPARK! Resiliency Challenge Portal
 
-> This Web App is under Active Development
+[![Actions Status](https://github.com/BU-Spark/Bhav/workflows/Build/badge.svg)](https://github.com/BU-Spark/Bhav/actions)
+[![License](http://img.shields.io/badge/License-MIT-brightgreen.svg)](./LICENSE)
 
-### Capabilities
+## Project setup
 
--   Authentication for Pages
--   User Profiles
--   Project Submissions
--   Image and Video Upload
--   Chat
--   Search
--   Basic Service Worker with Page Caching
+```bash
+npm install
+```
 
-### Technologies
+### Compiles and hot-reloads for development
 
--   Vue.JS
--   Vuex
--   Firebase
-    -   Firebase Cloud Firestore
-    -   Firebase Auth
-    -   Firebase Cloud Storage
-    -   Firebase Cloud Functions
+```bash
+npm run serve
+```
 
-### Contributing
+### Compiles and minifies for production
 
-Interested, active developers are encouraged to contribute to the project! Feel free to contact me via IM/Email.
+```bash
+npm run build
+```
 
-My Website: [rishabnayak.me](http://rishabnayak.me)
+### Lints and fixes files
+
+```bash
+npm run lint
+```
+
+### Customize configuration
+
+See [Configuration Reference](https://cli.vuejs.org/config/).
+
+## Calling Firebase functions
+
+With an authenticated @firebase/app object,
+
+```javascript
+firebase.functions().httpsCallable("name-of-function")(input_data).then(data => {...})
+```
+
+For more info on the types of functions, visit the official [Firebase Documentation](https://firebase.google.com/docs/functions).
+
+## Making a Firestore transaction
+
+With an authenticated @firebase/app object,
+
+```javascript
+import { db } from "../firebase/init";
+db.collection("name-of-collection").doc("doc-identifier").action().then(data => {...})
+```
+
+For more info on actions that can be performed, visit the official [Firebase Documentation](https://firebase.google.com/docs/firestore).
+
+## Deployment
+
+After running the buildscript, run the following command after installing the [Firebase CLI](https://firebase.google.com/docs/cli) to deploy the website as well as the functions.
+
+```bash
+firebase deploy
+```
+
+To deploy only functions,
+
+```bash
+firebase deploy --only functions
+```
+
+To deploy a specific function,
+
+```bash
+firebase deploy --only functions:(function name)
+```
+
+## Contributing
+
+To contribute to Bhav, view our [contribution guide](https://github.com/BU-Spark/Bhav/blob/master/CONTRIBUTING.md).

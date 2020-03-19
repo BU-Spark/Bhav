@@ -1,48 +1,51 @@
 <template>
-<main>
-  <div class="container">
-    <div class="jumbotron">
-      <div id="firebaseui-auth-container"></div>
+  <main>
+    <div class="container">
+      <div class="jumbotron">
+        <div id="firebaseui-auth-container"></div>
+      </div>
     </div>
-  </div>
-  <hr class="featurette-divider">
+    <hr class="featurette-divider" />
 
-  <footer class="container">
-    <p class="float-right"><a href="#">Back to top</a></p>
-    <p>© 2018 Humanistic Co-Design Initiative ·
-      <a>
-        <router-link :to="{ name: 'privacy'}">Privacy</router-link>
-      </a>
-    </p>
-  </footer>
-</main>
+    <footer class="container">
+      <p class="float-right"><a href="#">Back to top</a></p>
+      <p>
+        © 2018 Humanistic Co-Design Initiative ·
+        <a>
+          <router-link :to="{ name: 'privacy' }">Privacy</router-link>
+        </a>
+      </p>
+    </footer>
+  </main>
 </template>
 
 <script>
-import firebase from 'firebase'
-import firebaseui from 'firebaseui'
-import db from '@/firebase/init.js'
+import firebase from "firebase";
+import firebaseui from "firebaseui";
 export default {
   computed: {
     user() {
-      return this.$store.state.user
+      return this.$store.state.user;
     }
   },
   data() {
     return {
       unameCheck: null
-    }
+    };
   },
   async mounted() {
     if (!this.user) {
-      var ui = new firebaseui.auth.AuthUI(firebase.auth())
-      ui.start('#firebaseui-auth-container', {
-        signInSuccessUrl: '/',
-        signInOptions: [firebase.auth.GoogleAuthProvider.PROVIDER_ID, firebase.auth.EmailAuthProvider.PROVIDER_ID]
-      })
+      var ui = new firebaseui.auth.AuthUI(firebase.auth());
+      ui.start("#firebaseui-auth-container", {
+        signInSuccessUrl: "/",
+        signInOptions: [
+          firebase.auth.GoogleAuthProvider.PROVIDER_ID,
+          firebase.auth.EmailAuthProvider.PROVIDER_ID
+        ]
+      });
     }
   }
-}
+};
 </script>
 
 <style>
