@@ -233,8 +233,8 @@
 </template>
 
 <script>
-import firebase from "firebase";
-import db from "@/firebase/init.js";
+import firebase from "firebase/app";
+import { db } from "@/firebase/init.js";
 export default {
   name: "editprofile",
   computed: {

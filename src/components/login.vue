@@ -20,30 +20,15 @@
 </template>
 
 <script>
-import firebase from "firebase";
-import firebaseui from "firebaseui";
+import { authUI, authUIConfig } from "../firebase/init";
 export default {
   computed: {
     user() {
       return this.$store.state.user;
     }
   },
-  data() {
-    return {
-      unameCheck: null
-    };
-  },
-  async mounted() {
-    if (!this.user) {
-      var ui = new firebaseui.auth.AuthUI(firebase.auth());
-      ui.start("#firebaseui-auth-container", {
-        signInSuccessUrl: "/",
-        signInOptions: [
-          firebase.auth.GoogleAuthProvider.PROVIDER_ID,
-          firebase.auth.EmailAuthProvider.PROVIDER_ID
-        ]
-      });
-    }
+  mounted() {
+    authUI.start("#firebaseui-auth-container", authUIConfig);
   }
 };
 </script>

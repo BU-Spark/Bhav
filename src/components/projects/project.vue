@@ -141,7 +141,7 @@
 </template>
 
 <script>
-import db from "@/firebase/init.js";
+import { db } from "@/firebase/init.js";
 import comments from "@/components/addons/comments";
 export default {
   name: "project",

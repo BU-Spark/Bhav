@@ -73,7 +73,7 @@
 </template>
 
 <script>
-import db from "@/firebase/init.js";
+import { db } from "@/firebase/init.js";
 export default {
   name: "createproject",
   computed: {
