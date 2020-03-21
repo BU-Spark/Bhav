@@ -17,7 +17,7 @@ const config = {
 
 const app = firebase.initializeApp(config);
 const auth = firebase.auth();
-const db = app.firestore();
+const db = firebase.firestore();
 const functions = firebase.functions();
 
 const authUI = new firebaseui.auth.AuthUI(auth);

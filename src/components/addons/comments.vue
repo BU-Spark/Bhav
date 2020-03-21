@@ -18,7 +18,9 @@
               <a
                 v-if="user.uname == comment.sender"
                 class="btn text-right text-muted"
-                @click.prevent="delComment(comment.timestamp)"
+                @click.prevent="
+                  delComment(comment.value, comment.sender, comment.timestamp)
+                "
                 >Delete</a
               >
             </div>
@@ -56,7 +58,7 @@
 
 <script>
 import moment from "moment";
-import { db } from "@/firebase/init.js";
+import { db, functions } from "@/firebase/init.js";
 export default {
   computed: {
     user() {
@@ -74,27 +76,24 @@ export default {
   },
   methods: {
     async addComment() {
-      let dataref = db.collection("comments").doc(this.comBoxID);
-      let data = await dataref.get();
-      this.comments = data.data().comments;
-      this.comments.push({
-        value: this.newMessage,
-        sender: this.user.uname,
-        timestamp: Date.now()
-      });
-      await dataref.update({
-        comments: this.comments
+      await functions.httpsCallable("addComment")({
+        comBoxID: this.comBoxID,
+        comment: {
+          value: this.newMessage,
+          sender: this.user.uname,
+          timestamp: Date.now()
+        }
       });
       this.newMessage = null;
     },
-    async delComment(timestamp) {
-      let dataref = db.collection("comments").doc(this.comBoxID);
-      let data = await dataref.get();
-      this.comments = data
-        .data()
-        .comments.filter(comment => comment.timestamp != timestamp);
-      await dataref.update({
-        comments: this.comments
+    async delComment(value, sender, timestamp) {
+      await functions.httpsCallable("deleteComment")({
+        comBoxID: this.comBoxID,
+        comment: {
+          value: value,
+          sender: sender,
+          timestamp: timestamp
+        }
       });
     },
     async checkInput() {
@@ -113,11 +112,9 @@ export default {
       .collection("comments")
       .where("commentBoxID", "array-contains", this.route)
       .get();
-    const ref = db.collection("comments");
     if (findComment.empty) {
-      await ref.add({
-        comments: [],
-        commentBoxID: [this.route]
+      await functions.httpsCallable("createCommentBox")({
+        route: this.route
       });
       location.reload();
     } else {

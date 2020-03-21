@@ -234,7 +234,7 @@
 
 <script>
 import firebase from "firebase/app";
-import { db } from "@/firebase/init.js";
+import { db, functions } from "@/firebase/init.js";
 export default {
   name: "editprofile",
   computed: {
@@ -255,8 +255,8 @@ export default {
         this.fieldempty = true;
         return;
       } else {
-        const ref = db.collection("users").doc(this.user.uid);
-        await ref.update({
+        await functions.httpsCallable("updateUserProfile")({
+          id: this.user.uid,
           bio: this.bio,
           city: this.city,
           stt: this.stt,
@@ -283,7 +283,6 @@ export default {
       }
     },
     async deleteProfilePic() {
-      const ref = db.collection("users").doc(this.user.uid);
       const storage = firebase.storage().ref();
       const firestorageRef = storage.child(this.user.profilePic[1]);
       firestorageRef
@@ -294,8 +293,8 @@ export default {
         .catch(function() {
           // Uh-oh, an error occurred!
         });
-      await ref.update({
-        profilePic: firebase.firestore.FieldValue.delete()
+      await functions.httpsCallable("deleteProfilePic")({
+        id: this.user.uid
       });
       location.reload();
     },
@@ -311,9 +310,12 @@ export default {
         this.picStat = true;
       });
       const url = await ref.getDownloadURL();
-      const userRef = db.collection("users").doc(this.user.uid);
-      await userRef.update({
-        profilePic: [url, this.storagePath]
+      await functions.httpsCallable("addProfilePic")({
+        id: this.user.uid,
+        profilePic: {
+          url: url,
+          path: this.storagePath
+        }
       });
       location.reload();
     },
@@ -358,12 +360,12 @@ export default {
       }
     },
     async addDisability() {
-      const ref = db.collection("users").doc(this.user.uid);
       this.disabilities = this.user.disabilities;
       if (this.disabilitysuccess) {
         this.disabilities.push(this.disability);
-        await ref.update({
-          disabilities: this.disabilities
+        await functions.httpsCallable("addUserDisability")({
+          id: this.user.uid,
+          disability: this.disability
         });
         this.disability = null;
         this.disabilitysuccess = null;
@@ -386,12 +388,12 @@ export default {
       }
     },
     async addSkill() {
-      const ref = db.collection("users").doc(this.user.uid);
       this.skills = this.user.skills;
       if (this.skillsuccess) {
         this.skills.push(this.skill);
-        await ref.update({
-          skills: this.skills
+        await functions.httpsCallable("addSkill")({
+          id: this.user.uid,
+          skill: this.skill
         });
         this.skill = null;
         this.skillsuccess = null;

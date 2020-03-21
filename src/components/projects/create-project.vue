@@ -73,7 +73,7 @@
 </template>
 
 <script>
-import { db } from "@/firebase/init.js";
+import { db, functions } from "@/firebase/init.js";
 export default {
   name: "createproject",
   computed: {
@@ -83,26 +83,11 @@ export default {
   },
   methods: {
     async createProject() {
-      const ref = db.collection("projects");
-      await ref.add({
+      await functions.httpsCallable("createProject")({
         name: this.name,
         intro: this.intro,
         members: [this.user.uname],
-        images: [],
-        videos: [],
-        media: [],
-        challenge: null,
-        codesigner: null,
-        solution: null,
-        technologies: [],
-        disabilities: [],
-        created: Date.now(),
-        country: null,
-        city: null,
-        stt: null,
-        completion: null,
-        devstage: null,
-        tags: []
+        created: Date.now()
       });
       this.$router.push({
         name: "project",

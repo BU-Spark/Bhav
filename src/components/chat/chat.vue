@@ -18,7 +18,9 @@
               <a
                 v-if="user.uname == message.sender"
                 class="btn text-right text-muted"
-                @click.prevent="delChat(message.timestamp)"
+                @click.prevent="
+                  delChat(message.value, message.sender, message.timestamp)
+                "
                 >Delete</a
               >
             </div>
@@ -67,7 +69,7 @@
 
 <script>
 import moment from "moment";
-import { db } from "@/firebase/init.js";
+import { db, functions } from "@/firebase/init.js";
 export default {
   name: "chat",
   computed: {
@@ -87,16 +89,13 @@ export default {
   },
   methods: {
     async sendMessage() {
-      let dataref = db.collection("chats").doc(this.chatID);
-      let data = await dataref.get();
-      this.messages = data.data().messages;
-      this.messages.push({
-        value: this.newMessage,
-        sender: this.user.uname,
-        timestamp: Date.now()
-      });
-      await dataref.update({
-        messages: this.messages
+      await functions.httpsCallable("addChat")({
+        chatID: this.chatID,
+        message: {
+          value: this.newMessage,
+          sender: this.user.uname,
+          timestamp: Date.now()
+        }
       });
       this.newMessage = null;
     },
@@ -107,14 +106,14 @@ export default {
         this.disableSend = false;
       }
     },
-    async delChat(timestamp) {
-      let dataref = db.collection("chats").doc(this.chatID);
-      let data = await dataref.get();
-      this.messages = data
-        .data()
-        .messages.filter(message => message.timestamp != timestamp);
-      await dataref.update({
-        messages: this.messages
+    async delChat(value, sender, timestamp) {
+      await functions.httpsCallable("deleteChat")({
+        chatID: this.chatID,
+        message: {
+          value: value,
+          sender: sender,
+          timestamp: timestamp
+        }
       });
     },
     makeTimeReadable(timestamp) {
@@ -144,10 +143,8 @@ export default {
         .collection("chats")
         .where("chatRoomID", "array-contains", this.user.uname + this.uname)
         .get();
-      const ref = db.collection("chats");
       if (findChat.empty) {
-        await ref.add({
-          messages: [],
+        await functions.httpsCallable("createChatBox")({
           chatRoomID: chatRoomID
         });
         location.reload();

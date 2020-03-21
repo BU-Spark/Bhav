@@ -19,7 +19,9 @@
                 <a
                   v-if="user.uname == chat.sender"
                   class="btn text-right text-muted"
-                  @click.prevent="delComment(chat.timestamp)"
+                  @click.prevent="
+                    delComment(chat.value, chat.sender, chat.timestamp)
+                  "
                   >Delete</a
                 >
               </div>
@@ -69,7 +71,7 @@
 </template>
 <script>
 import moment from "moment";
-import { db } from "@/firebase/init.js";
+import { db, functions } from "@/firebase/init.js";
 export default {
   computed: {
     user() {
@@ -89,27 +91,24 @@ export default {
   },
   methods: {
     async addComment() {
-      let dataref = db.collection("projectchats").doc(this.chatBoxID);
-      let data = await dataref.get();
-      this.chats = data.data().chats;
-      this.chats.push({
-        value: this.newMessage,
-        sender: this.user.uname,
-        timestamp: Date.now()
-      });
-      await dataref.update({
-        chats: this.chats
+      await functions.httpsCallable("addProjectChat")({
+        chatID: this.chatBoxID,
+        message: {
+          value: this.newMessage,
+          sender: this.user.uname,
+          timestamp: Date.now()
+        }
       });
       this.newMessage = null;
     },
-    async delComment(timestamp) {
-      let dataref = db.collection("projectchats").doc(this.chatBoxID);
-      let data = await dataref.get();
-      this.chats = data
-        .data()
-        .chats.filter(comment => comment.timestamp != timestamp);
-      await dataref.update({
-        chats: this.chats
+    async delComment(value, sender, timestamp) {
+      await functions.httpsCallable("deleteProjectChat")({
+        chatID: this.chatBoxID,
+        message: {
+          value: value,
+          sender: sender,
+          timestamp: timestamp
+        }
       });
     },
     async checkInput() {
@@ -135,11 +134,9 @@ export default {
     this.members = usercheck.docs[0].data().members;
     let check = this.members.find(item => item == this.user.uname);
     if (check != undefined) {
-      const ref = db.collection("projectchats");
       if (findChat.empty) {
-        await ref.add({
-          chats: [],
-          chatBoxID: [this.route]
+        await functions.httpsCallable("createProjectChatBox")({
+          chatBoxID: this.route
         });
         location.reload();
       } else {

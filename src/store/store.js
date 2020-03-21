@@ -1,7 +1,7 @@
 import Vue from "vue";
 import Vuex from "vuex";
 import firebase from "firebase";
-import { db } from "@/firebase/init.js";
+import { db, functions } from "@/firebase/init.js";
 
 Vue.use(Vuex);
 
@@ -30,11 +30,10 @@ const actions = {
     var raid = await mydb.get();
     if (!raid.exists) {
       // first time user
-      await mydb.set({
-        displayName: user.displayName,
+      await functions.httpsCallable("createNewUser")({
         uid: user.uid,
-        disabilities: [],
-        skills: []
+        displayName: user.displayName,
+        email: user.email
       });
       raid = await mydb.get();
       context.commit("setUser", raid.data());

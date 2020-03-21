@@ -293,7 +293,7 @@
                   >
                     <span
                       class="btn text-muted"
-                      @click="deleteImage(image.path)"
+                      @click="deleteImage(image.url, image.path)"
                       >Remove</span
                     >
                   </div>
@@ -331,7 +331,7 @@
                   >
                     <span
                       class="btn text-muted"
-                      @click="deleteVideo(video.path)"
+                      @click="deleteVideo(video.url, video.path)"
                       >Remove</span
                     >
                   </div>
@@ -371,7 +371,9 @@
                   <div
                     class="d-flex justify-content-between align-items-center w-100"
                   >
-                    <span class="btn text-muted" @click="deleteFile(file.path)"
+                    <span
+                      class="btn text-muted"
+                      @click="deleteFile(file.url, file.path, file.name)"
                       >Remove</span
                     >
                   </div>
@@ -406,7 +408,7 @@
 
 <script>
 import firebase from "firebase/app";
-import { db } from "@/firebase/init.js";
+import { db, functions } from "@/firebase/init.js";
 export default {
   name: "editproject",
   computed: {
@@ -425,8 +427,9 @@ export default {
         this.memberregd == false
       ) {
         this.members.push(this.member);
-        await ref.update({
-          members: this.members
+        await functions.httpsCallable("addMember")({
+          id: this.id,
+          member: this.member
         });
         this.member = null;
         this.memberexists = null;
@@ -435,9 +438,8 @@ export default {
       }
     },
     async updateProject() {
-      const ref = db.collection("projects").doc(this.id);
-      await ref.get();
-      await ref.update({
+      await functions.httpsCallable("updateProject")({
+        id: this.id,
         intro: this.intro,
         challenge: this.challenge,
         codesigner: this.codesigner,
@@ -465,12 +467,9 @@ export default {
         }
       });
     },
-    async deleteImage(path) {
-      const ref = db.collection("projects").doc(this.id);
+    async deleteImage(url, path) {
       const storage = firebase.storage().ref();
       const firestorageRef = storage.child(path);
-      let data = await ref.get();
-      this.images = data.data().images.filter(image => image.path != path);
       firestorageRef
         .delete()
         .then(function() {
@@ -479,42 +478,49 @@ export default {
         .catch(function() {
           // Uh-oh, an error occurred!
         });
-      await ref.update({
-        images: this.images
+      await functions.httpsCallable("deleteImage")({
+        id: this.id,
+        image: {
+          url: url,
+          path: path
+        }
       });
       location.reload();
     },
-    async deleteVideo(path) {
-      const ref = db.collection("projects").doc(this.id);
+    async deleteVideo(url, path) {
       const storage = firebase.storage().ref();
       const firestorageRef = storage.child(path);
-      let data = await ref.get();
-      this.videos = data.data().videos.filter(video => video.path != path);
       firestorageRef
         .delete()
         .then(function() {})
         .catch(function() {
           // Uh-oh, an error occurred!
         });
-      await ref.update({
-        videos: this.videos
+      await functions.httpsCallable("deleteVideo")({
+        id: this.id,
+        video: {
+          url: url,
+          path: path
+        }
       });
       location.reload();
     },
-    async deleteFile(path) {
-      const ref = db.collection("projects").doc(this.id);
+    async deleteFile(url, path, name) {
       const storage = firebase.storage().ref();
       const firestorageRef = storage.child(path);
-      let data = await ref.get();
-      this.mediafiles = data.data().media.filter(media => media.path != path);
       firestorageRef
         .delete()
         .then(function() {})
         .catch(function() {
           // Uh-oh, an error occurred!
         });
-      await ref.update({
-        media: this.mediafiles
+      await functions.httpsCallable("deleteMedia")({
+        id: this.id,
+        media: {
+          url: url,
+          path: path,
+          name: name
+        }
       });
       location.reload();
     },
@@ -527,15 +533,12 @@ export default {
       const ref = storage.child(this.storagePath);
       await ref.put(this.image);
       const url = await ref.getDownloadURL();
-      const projRef = db.collection("projects").doc(this.id);
-      const projRefGet = await projRef.get();
-      this.images = projRefGet.data().images;
-      this.images.push({
-        url: url,
-        path: this.storagePath
-      });
-      await projRef.update({
-        images: this.images
+      await functions.httpsCallable("addImage")({
+        id: this.id,
+        image: {
+          url: url,
+          path: this.storagePath
+        }
       });
       location.reload();
     },
@@ -548,15 +551,12 @@ export default {
       const ref = storage.child(this.videoStorage);
       await ref.put(this.video);
       const url = await ref.getDownloadURL();
-      const projRef = db.collection("projects").doc(this.id);
-      const projRefGet = await projRef.get();
-      this.videos = projRefGet.data().videos;
-      this.videos.push({
-        url: url,
-        path: this.videoStorage
-      });
-      await projRef.update({
-        videos: this.videos
+      await functions.httpsCallable("addVideo")({
+        id: this.id,
+        video: {
+          url: url,
+          path: this.videoStorage
+        }
       });
       location.reload();
     },
@@ -570,16 +570,13 @@ export default {
       const ref = storage.child(this.mediaStorage);
       await ref.put(this.media);
       const url = await ref.getDownloadURL();
-      const projRef = db.collection("projects").doc(this.id);
-      const projRefGet = await projRef.get();
-      this.mediafiles = projRefGet.data().media;
-      this.mediafiles.push({
-        url: url,
-        path: this.mediaStorage,
-        name: actualname
-      });
-      await projRef.update({
-        media: this.mediafiles
+      await functions.httpsCallable("addMedia")({
+        id: this.id,
+        media: {
+          url: url,
+          path: this.mediaStorage,
+          name: actualname
+        }
       });
       location.reload();
     },
@@ -630,8 +627,9 @@ export default {
       this.disabilities = refGet.data().disabilities;
       if (this.disabilitysuccess) {
         this.disabilities.push(this.disability);
-        await ref.update({
-          disabilities: this.disabilities
+        await functions.httpsCallable("addDisability")({
+          id: this.id,
+          disability: this.disability
         });
         this.disability = null;
         this.disabilitysuccess = null;
@@ -661,8 +659,9 @@ export default {
       this.technologies = refGet.data().technologies;
       if (this.technologysuccess) {
         this.technologies.push(this.technology);
-        await ref.update({
-          technologies: this.technologies
+        await functions.httpsCallable("addTechnology")({
+          id: this.id,
+          technology: this.technology
         });
         this.technology = null;
         this.technologysuccess = null;

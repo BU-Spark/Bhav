@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "/precache-manifest.ae550faf52565485a3ca6197fec9fb08.js"
+  "/precache-manifest.181f171e74a173920bf3012fde77c9cb.js"
 );
 
 workbox.core.setCacheNameDetails({prefix: "bhav"});
