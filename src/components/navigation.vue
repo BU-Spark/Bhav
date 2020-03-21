@@ -2,7 +2,7 @@
   <nav class="navbar navbar-expand-md navbar-light bg-light navbar-fixed">
     <div class="container">
       <a class="navbar-brand">
-        <router-link to="/">Humanistic Co-Design Initiative</router-link>
+        <router-link to="/">SPARK! Resiliency Challenge</router-link>
       </a>
       <button
         class="navbar-toggler"
